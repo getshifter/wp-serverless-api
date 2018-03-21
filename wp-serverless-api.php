@@ -1,46 +1,40 @@
 <?php
+
 /*
 Plugin Name: WP Serverless API
 Author: Daniel Olson
 Author URI: https://github.com/emaildano/wp-serverless-api
-Description: Save WordPress Data to JSON
+Description: WordPress REST API to JSON File
 */
 
-function export_posts_in_json (){
 
-    $args = array(
-        'post_type' => 'post',
-        'post_status' => 'publish',
-        'posts_per_page' => -1,
+function export_posts_in_json() {
+
+    $resource = array(
+        'posts',
+        'pages',
+        'media'
     );
 
-    $query = new WP_Query( $args );
-    $posts = array();
+    foreach ($resource as $route) {
+        $url =  esc_url( home_url( '/' ) ) . 'wp-json/wp/v2/' . $route;
+        
+        $jsonData = json_decode( file_get_contents($url) );
+        $jsonEncode = json_encode($jsonData);
 
-    while( $query->have_posts() ) : $query->the_post();
+        $upload_dir = wp_get_upload_dir();
+        $file_name = $route . '.json';
+        $save_path = $upload_dir['basedir'] . '/wp-sls-api/' . $file_name;
+        $dirname = dirname($save_path);
+        
+        if (!is_dir($dirname)) {
+            mkdir($dirname, 0755, true);
+        }
 
-    $posts[] = array(
-        'title' => get_the_title(),
-        'excerpt' => get_the_excerpt(),
-        'author' => get_the_author()
-    );
-
-    endwhile;
-
-    wp_reset_query();
-
-    $data = json_encode($posts);
-    $upload_dir = wp_get_upload_dir();
-    $file_name = $args['post_type'] . '.json';
-    $save_path = $upload_dir['basedir'] . '/wp-sls-api/' . $file_name;
-    $dirname = dirname($save_path);
-    if (!is_dir($dirname)) {
-        mkdir($dirname, 0755, true);
+        $f = fopen( $save_path , "w+" );
+        fwrite($f , $jsonEncode);
+        fclose($f);
     }
-
-    $f = fopen( $save_path , "w+" );
-    fwrite($f , $data);
-    fclose($f);
 
 }
 
