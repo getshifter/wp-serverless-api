@@ -22,9 +22,9 @@ function export_posts_in_json() {
         $jsonData = json_decode( file_get_contents($url) );
         $jsonEncode = json_encode($jsonData);
 
-        $upload_dir = wp_get_upload_dir();
+        $base_dir = content_url();
         $file_name = $route . '.json';
-        $save_path = $upload_dir['basedir'] . '/wp-sls-api/' . $file_name;
+        $save_path = $base_dir . '/wp-sls-api/' . $file_name;
         $dirname = dirname($save_path);
         
         if (!is_dir($dirname)) {
