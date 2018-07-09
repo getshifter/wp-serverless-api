@@ -38,4 +38,12 @@ function export_posts_in_json() {
 
 }
 
+/**
+ * Create JSON Files on Post Save
+ */
 add_action( 'save_post', 'export_posts_in_json' );
+
+/**
+ * Create JSON Files on Plugin Activate 
+ */
+register_activation_hook( __FILE__, 'export_posts_in_json' );
