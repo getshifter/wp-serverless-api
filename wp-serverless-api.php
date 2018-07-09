@@ -17,7 +17,7 @@ function export_posts_in_json() {
     );
 
     foreach ($resource as $route) {
-        $url =  esc_url( home_url( '/' ) ) . 'wp-json/wp/v2/' . $route . '?_embed&per_page=100';
+        $url =  esc_url( home_url( '/' ) ) . 'wp-json/wp/v2/' . $route . '?_embed&per_page=5';
         
         $jsonData = json_decode( file_get_contents($url) );
         $jsonEncode = json_encode($jsonData);
