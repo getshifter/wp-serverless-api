@@ -8,34 +8,51 @@ Description: WordPress REST API to JSON File
 */
 
 
-function export_posts_in_json() {
-
-    $resource = array(
+function compile_db(
+    $routes = array(
         'posts',
         'pages',
         'media'
-    );
+    )
+) {
 
-    foreach ($resource as $route) {
-        $url =  esc_url( home_url( '/' ) ) . 'wp-json/wp/v2/' . $route . '?_embed&per_page=5';
-        
+    $db_array = array();
+
+    foreach ($routes as $route) {
+        $url =  'https://demo.wp-api.org/wp-json/wp/v2/' . $route . '?_embed&per_page=5';
         $jsonData = json_decode( file_get_contents($url) );
-        $jsonEncode = json_encode($jsonData);
-
-        $upload_dir = wp_get_upload_dir();
-        $file_name = $route . '.json';
-        $save_path = $upload_dir['basedir'] . '/wp-sls-api/' . $file_name;
-        $dirname = dirname($save_path);
-        
-        if (!is_dir($dirname)) {
-            mkdir($dirname, 0755, true);
-        }
-
-        $f = fopen( $save_path , "w+" );
-        fwrite($f , $jsonEncode);
-        fclose($f);
+        $db_array[] = $jsonData;
     }
+
+    $db = json_encode($db_array);
+
+    return $db;
 
 }
 
-add_action( 'save_post', 'export_posts_in_json' );
+function save_db(
+        $db,
+        $file_name = 'db.json'
+    ) {
+    $upload_dir = wp_get_upload_dir();
+    $save_path = $upload_dir['basedir'] . '/wp-sls-api/' . $file_name;
+    $dirname = dirname($save_path);
+    
+    if (!is_dir($dirname))
+    {
+        mkdir($dirname, 0755, true);
+    }
+
+    $f = fopen( $save_path , "w+" );
+    fwrite($f , $db);
+    fclose($f);
+}
+
+function build_db()
+{
+    $db = compile_db();
+    // $db_clean = preg_match('demo.wp-api.org', 'pizza', $db);
+    save_db($db);
+}
+
+add_action( 'save_post', 'build_db' );
