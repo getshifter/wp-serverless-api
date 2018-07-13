@@ -19,7 +19,6 @@ function compile_db(
     $db_array = array();
 
     foreach ($routes as $route) {
-        // $url =  'https://demo.wp-api.org/wp-json/wp/v2/' . $route;
         $url =  esc_url( home_url( '/' ) ) . 'wp-json/wp/v2/' . $route;
         $jsonData = json_decode( file_get_contents($url) );
 
@@ -53,7 +52,6 @@ function save_db(
 function build_db()
 {
     $db = compile_db();
-    // $db_clean = preg_match('demo.wp-api.org', 'pizza', $db);
     save_db($db);
 }
 
