@@ -19,7 +19,7 @@ function compile_db(
     $db_array = array();
 
     foreach ($routes as $route) {
-        $url =  esc_url( home_url( '/' ) ) . 'wp-json/wp/v2/' . $route;
+        $url =  'https://demo.wp-api.org/wp-json/wp/v2/' . $route;
         $jsonData = json_decode( file_get_contents($url) );
 
         $db_array[$route] = (array) $jsonData;
@@ -56,3 +56,12 @@ function build_db()
 }
 
 add_action( 'save_post', 'build_db' );
+
+/**
+ * Create JSON on Activation
+ */
+register_activation_hook( __FILE__, 'pluginprefix_install' );
+function pluginprefix_install()
+{
+    build_db();
+}
