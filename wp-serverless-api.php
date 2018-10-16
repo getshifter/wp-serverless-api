@@ -71,4 +71,23 @@ function build_db()
     save_db($db);
 }
 
+/**
+ * Build on Post Save
+ */
 add_action( 'save_post', 'build_db' );
+
+/**
+ * Build on Plugin Activation
+ */
+function wp_sls_api_activation_hook() {
+    build_db();
+}
+
+add_action( 'init', 'wp_sls_api_activation_hook' );
+ 
+function wp_sls_api_install() {
+    activation_hook();
+    flush_rewrite_rules();
+}
+
+register_activation_hook( __FILE__, 'wp_sls_api_install' );
