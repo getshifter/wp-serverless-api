@@ -33,7 +33,7 @@ function compile_db(
         if  (getenv("SHIFTER_ACCESS_TOKEN") === false) {
             $url =  'https://demo.wp-api.org/wp-json/wp/v2/' . $route;
         } else {
-            $url =  '/wp-json/wp/v2/' . $route;
+            $url =  esc_url( home_url( '/' ) ) . 'wp-json/wp/v2/' . $route;
         }
 
         $jsonData = json_decode( file_get_contents($url) );
