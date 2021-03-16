@@ -2,9 +2,11 @@
 
 /*
 Plugin Name: WP Serverless API
-Author: Daniel Olson
-Author URI: https://github.com/emaildano/wp-serverless-api
+Plugin URI: https://github.com/getshifter/wp-serverless-api
 Description: WordPress REST API to JSON File
+Version: 0.2.0
+Author: Shifter
+Author URI: https://getshifter.io
 */
 
 function enable_permalinks_notice() {
@@ -51,10 +53,9 @@ function save_db(
         $db,
         $file_name = 'db.json'
     ) {
-    $upload_dir = wp_get_upload_dir();
-    $save_path = $upload_dir['basedir'] . '/wp-sls-api/' . $file_name;
+    $save_path = WP_CONTENT_DIR . '/wp-sls-api/' . $file_name;
     $dirname = dirname($save_path);
-    
+
     if (!is_dir($dirname))
     {
         mkdir($dirname, 0755, true);
