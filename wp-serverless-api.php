@@ -9,36 +9,44 @@ Author: Shifter
 Author URI: https://getshifter.io
 */
 
-function enable_permalinks_notice() {
-    ?>
+function enable_permalinks_notice()
+{
+?>
     <div class="notice notice-warning">
-        <p><?php _e( 'WP Serverless Redirects requires Permalinks. <a href="/wp-admin/options-permalink.php">Enable Permalinks</a>'); ?></p>
+        <p><?php _e('WP Serverless Redirects requires Permalinks. <a href="/wp-admin/options-permalink.php">Enable Permalinks</a>'); ?></p>
     </div>
-    <?php
+<?php
 }
 
-if ( !get_option('permalink_structure') ) {
-    add_action( 'admin_notices', 'enable_permalinks_notice' );
+if (!get_option('permalink_structure')) {
+    add_action('admin_notices', 'enable_permalinks_notice');
 }
 
 function compile_db(
     $routes = array(
-        'posts',
-        'pages',
-        'media'
+        'product',
     )
 ) {
 
     $db_array = array();
 
     foreach ($routes as $route) {
-        if  (getenv("SHIFTER_ACCESS_TOKEN") === false) {
-            $url =  'https://demo.wp-api.org/wp-json/wp/v2/' . $route;
+        if (getenv("SHIFTER_ACCESS_TOKEN")) {
+            $url =  'https://demo.wp-api.org/wp-json/wp/v2/' . $route . '?per_page=100';
         } else {
-            $url =  esc_url( home_url( '/' ) ) . 'wp-json/wp/v2/' . $route;
+            $url =  esc_url(home_url('/')) . 'wp-json/wp/v2/' . $route;
         }
 
-        $jsonData = json_decode( file_get_contents($url) );
+        $arrContextOptions = array(
+            "ssl" => array(
+                "verify_peer" => false,
+                "verify_peer_name" => false,
+            ),
+        );
+
+        $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
+
+        $jsonData = json_decode($response);
 
         $db_array[$route] = (array) $jsonData;
     }
@@ -46,23 +54,21 @@ function compile_db(
     $db = json_encode($db_array);
 
     return $db;
-
 }
 
 function save_db(
-        $db,
-        $file_name = 'db.json'
-    ) {
-    $save_path = WP_CONTENT_DIR . '/wp-sls-api/' . $file_name;
+    $db,
+    $file_name = 'product.json'
+) {
+    $save_path = WP_CONTENT_DIR . '/uploads/wp-json/wp/v2/' . $file_name;
     $dirname = dirname($save_path);
 
-    if (!is_dir($dirname))
-    {
+    if (!is_dir($dirname)) {
         mkdir($dirname, 0755, true);
     }
 
-    $f = fopen( $save_path , "w+" );
-    fwrite($f , $db);
+    $f = fopen($save_path, "w+");
+    fwrite($f, $db);
     fclose($f);
 }
 
@@ -75,4 +81,4 @@ function build_db()
 /**
  * Build on Post Save
  */
-add_action( 'save_post', 'build_db' );
+add_action('save_post', 'build_db');
