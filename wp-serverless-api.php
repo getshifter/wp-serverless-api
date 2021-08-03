@@ -68,7 +68,7 @@ function save_db(
     fclose($f);
 }
 
-function build_db($post_id, $post)
+function build_db($post_id)
 {
     $db = compile_db(['posts/' . $post_id]);
     save_db($db, $post_id);
