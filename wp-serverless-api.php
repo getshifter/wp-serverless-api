@@ -31,11 +31,7 @@ function compile_db(
     $db_array = array();
 
     foreach ($routes as $route) {
-        if (getenv("SHIFTER_ACCESS_TOKEN")) {
-            $url =  'https://demo.wp-api.org/wp-json/wp/v2/' . $route . '?per_page=100';
-        } else {
-            $url =  esc_url(home_url('/')) . 'wp-json/wp/v2/' . $route;
-        }
+        $url =  esc_url(home_url('/')) . 'wp-json/wp/v2/' . $route;
 
         $arrContextOptions = array(
             "ssl" => array(
