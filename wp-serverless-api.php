@@ -22,30 +22,25 @@ if (!get_option('permalink_structure')) {
     add_action('admin_notices', 'enable_permalinks_notice');
 }
 
-function compile_db(
-    $routes = array(
-        'posts',
-    )
-) {
+function compile_db($route)
+{
 
     $db_array = array();
 
-    foreach ($routes as $route) {
-        $url =  esc_url(home_url('/')) . 'wp-json/wp/v2/' . $route;
+    $url =  esc_url(home_url('/')) . 'wp-json/wp/v2/' . $route;
 
-        $arrContextOptions = array(
-            "ssl" => array(
-                "verify_peer" => false,
-                "verify_peer_name" => false,
-            ),
-        );
+    $arrContextOptions = array(
+        "ssl" => array(
+            "verify_peer" => false,
+            "verify_peer_name" => false,
+        ),
+    );
 
-        $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
+    $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
 
-        $jsonData = json_decode($response);
+    $jsonData = json_decode($response);
 
-        $db_array[$route] = (array) $jsonData;
-    }
+    $db_array = $jsonData;
 
     $db = json_encode($db_array);
 
@@ -70,7 +65,7 @@ function save_db(
 
 function build_db($post_id)
 {
-    $db = compile_db(['posts/' . $post_id]);
+    $db = compile_db('posts/' . $post_id);
     save_db($db, $post_id);
 }
 
