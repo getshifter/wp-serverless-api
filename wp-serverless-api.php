@@ -17,25 +17,23 @@ function wp_sls_api(array $result, \WP_REST_Server $server, \WP_Rest_Request $re
     $response = rest_do_request($request);
     $server = rest_get_server();
     $data = (array) $server->response_to_data($response, false);
+    $save_path = WP_CONTENT_DIR . '/uploads/wp-json' . $route . '.json';
+    $f = fopen($save_path, "w+");
+    $dirname = dirname($save_path);
 
     // Check for routing errors.
     if ($data['data']['status'] === 404) {
         return $result;
     }
 
-    $save_path = WP_CONTENT_DIR . '/uploads/wp-json' . $route . '.json';
-    $dirname = dirname($save_path);
-
+    // Check and make file directory.
     if (!is_dir($dirname)) {
         mkdir($dirname, 0755, true);
     }
 
-    $f = fopen($save_path, "w+");
     fwrite($f, json_encode($data));
     fclose($f);
 
-    // return (array) $request->get_params();
-    // return (array) $request->get_route();
     return $result;
 }
 
