@@ -4,7 +4,7 @@
 Plugin Name: WP Serverless API
 Plugin URI: https://github.com/getshifter/wp-serverless-api
 Description: WordPress REST API to JSON File
-Version: 0.2.0
+Version: 0.3.0
 Author: Shifter
 Author URI: https://getshifter.io
 */
