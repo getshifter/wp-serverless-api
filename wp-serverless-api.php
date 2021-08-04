@@ -9,49 +9,21 @@ Author: Shifter
 Author URI: https://getshifter.io
 */
 
-function enable_permalinks_notice()
-{
-?>
-    <div class="notice notice-warning">
-        <p><?php _e('WP Serverless Redirects requires Permalinks. <a href="/wp-admin/options-permalink.php">Enable Permalinks</a>'); ?></p>
-    </div>
-<?php
-}
-
-if (!get_option('permalink_structure')) {
-    add_action('admin_notices', 'enable_permalinks_notice');
-}
-
-function compile_db($route)
+function wp_sls_api(array $result, \WP_REST_Server $server, \WP_Rest_Request $request): array
 {
 
-    $db_array = array();
+    $route = $request->get_route();
+    $request = new WP_REST_Request('GET', $request->get_route());
+    $response = rest_do_request($request);
+    $server = rest_get_server();
+    $data = (array) $server->response_to_data($response, false);
 
-    $url =  esc_url(home_url('/')) . 'wp-json/wp/v2/' . $route;
+    // Check for routing errors.
+    if ($data['data']['status'] === 404) {
+        return $result;
+    }
 
-    $arrContextOptions = array(
-        "ssl" => array(
-            "verify_peer" => false,
-            "verify_peer_name" => false,
-        ),
-    );
-
-    $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
-
-    $jsonData = json_decode($response);
-
-    $db_array = $jsonData;
-
-    $db = json_encode($db_array);
-
-    return $db;
-}
-
-function save_db(
-    $db,
-    $file_name = 'posts'
-) {
-    $save_path = WP_CONTENT_DIR . '/uploads/wp-json/wp/v2/' . $file_name . '.json';
+    $save_path = WP_CONTENT_DIR . '/uploads/wp-json' . $route . '.json';
     $dirname = dirname($save_path);
 
     if (!is_dir($dirname)) {
@@ -59,17 +31,12 @@ function save_db(
     }
 
     $f = fopen($save_path, "w+");
-    fwrite($f, $db);
+    fwrite($f, json_encode($data));
     fclose($f);
+
+    // return (array) $request->get_params();
+    // return (array) $request->get_route();
+    return $result;
 }
 
-function build_db($post_id)
-{
-    $db = compile_db('posts/' . $post_id);
-    save_db($db, $post_id);
-}
-
-/**
- * Build on Post Save
- */
-add_action('save_post', 'build_db');
+add_filter('rest_pre_echo_response', 'wp_sls_api', 10, 3);
