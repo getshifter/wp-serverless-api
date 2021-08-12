@@ -9,22 +9,17 @@ Author: Shifter
 Author URI: https://getshifter.io
 */
 
-function wp_sls_api(array $result, \WP_REST_Server $server, \WP_Rest_Request $request): array
+function api_request(array $result, \WP_REST_Server $server, \WP_Rest_Request $request): array
 {
 
-    $route = $request->get_route();
-    $request = new WP_REST_Request('GET', $request->get_route());
+    $route = $request->get_route() ? $request->get_route() : 'index';
+    $request = new WP_REST_Request('GET', $route);
     $response = rest_do_request($request);
     $server = rest_get_server();
     $data = (array) $server->response_to_data($response, false);
-    $save_path = WP_CONTENT_DIR . '/uploads/wp-json' . $route . '.json';
+    $save_path = WP_CONTENT_DIR . '/uploads/wp-json/' . $route . '.json';
     $f = fopen($save_path, "w+");
     $dirname = dirname($save_path);
-
-    // Check for routing errors.
-    if ($data['data']['status'] === 404) {
-        return $result;
-    }
 
     // Check and make file directory.
     if (!is_dir($dirname)) {
@@ -34,7 +29,53 @@ function wp_sls_api(array $result, \WP_REST_Server $server, \WP_Rest_Request $re
     fwrite($f, json_encode($data));
     fclose($f);
 
+    // error_log(print_r((string) $route, true));
+
     return $result;
 }
 
-add_filter('rest_pre_echo_response', 'wp_sls_api', 10, 3);
+add_filter('rest_pre_echo_response', 'api_request', 10, 3);
+
+
+function user_request($post_id)
+{
+
+    if (wp_is_post_revision($post_id)) {
+        return;
+    }
+
+    if (wp_is_post_autosave($post_id)) {
+        return;
+    }
+
+    $result = [];
+    $post_type = get_post_type($post_id);
+    $post_type_obj = get_post_type_object($post_type);
+    $post_type_name = (string) strtolower($post_type_obj->labels->name);
+
+    $rest_path = '/wp/v2/' .  $post_type_name . '/' . $post_id;
+
+    $route = $rest_path;
+    $request = new WP_REST_Request('GET', $route);
+
+    $response = rest_do_request($request);
+    $server = rest_get_server();
+    $data = (array) $server->response_to_data($response, false);
+    $save_path = WP_CONTENT_DIR . '/uploads/wp-json/' . $route . '.json';
+    $f = fopen($save_path, "w+");
+    $dirname = dirname($save_path);
+
+    // Check and make file directory.
+    if (!is_dir($dirname)) {
+        mkdir($dirname, 0755, true);
+    }
+
+    fwrite($f, json_encode($data));
+    fclose($f);
+
+    // error_log(print_r($request, true));
+
+    return $result;
+}
+
+add_action('save_post', 'user_request');
