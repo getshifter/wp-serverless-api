@@ -9,13 +9,10 @@ Author: Shifter
 Author URI: https://getshifter.io
 */
 
-function api_request(array $result, \WP_REST_Server $server, \WP_Rest_Request $request): array
+function api_request(array $result, \WP_REST_Server $server, \WP_Rest_Request $request, $post): array
 {
 
-    global $post;
     if (in_array($post['post_type'], ['post', 'page'])) {
-        error_log(print_r((string) $post, true));
-
         $route = $request->get_route() ? $request->get_route() : 'index';
         $request = new WP_REST_Request('GET', $route);
         $response = rest_do_request($request);
