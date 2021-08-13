@@ -12,6 +12,11 @@ Author URI: https://getshifter.io
 function api_request(array $result, \WP_REST_Server $server, \WP_Rest_Request $request): array
 {
 
+    global $post;
+    if (!in_array($post->post_type, ['post', 'page'])) {
+        return;
+    }
+
     $route = $request->get_route() ? $request->get_route() : 'index';
     $request = new WP_REST_Request('GET', $route);
     $response = rest_do_request($request);
@@ -39,6 +44,12 @@ add_filter('rest_pre_echo_response', 'api_request', 10, 3);
 
 function user_request($post_id)
 {
+
+    global $post;
+
+    if (!in_array($post->post_type, ['post', 'page'])) {
+        return;
+    }
 
     if (wp_is_post_revision($post_id)) {
         return;
