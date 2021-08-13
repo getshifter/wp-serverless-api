@@ -13,8 +13,8 @@ function api_request(array $result, \WP_REST_Server $server, \WP_Rest_Request $r
 {
 
 
-    if (in_array((array) get_post_type($result['id']), ['post', 'page'])) {
-        error_log(print_r(get_post_type($result['id']), true));
+    if (in_array((string) get_post_type($result['id']), ['post', 'page'])) {
+        // error_log(print_r(get_post_type($result['id']), true));
 
         $route = $request->get_route() ? $request->get_route() : 'index';
         $request = new WP_REST_Request('GET', $route);
@@ -35,10 +35,10 @@ function api_request(array $result, \WP_REST_Server $server, \WP_Rest_Request $r
 
         // error_log(print_r((string) $route, true));
 
-        return $result;
+        return (array) $result;
     }
 
-    return $result;
+    return (array) $result;
 }
 
 add_filter('rest_pre_echo_response', 'api_request', 10, 3);
