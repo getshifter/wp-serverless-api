@@ -13,30 +13,30 @@ function api_request(array $result, \WP_REST_Server $server, \WP_Rest_Request $r
 {
 
     global $post;
-    if (!in_array($post->post_type, ['post', 'page'])) {
-        return;
+    if (in_array($post['post_type'], ['post', 'page'])) {
+        error_log(print_r((string) $post, true));
+
+        $route = $request->get_route() ? $request->get_route() : 'index';
+        $request = new WP_REST_Request('GET', $route);
+        $response = rest_do_request($request);
+        $server = rest_get_server();
+        $data = (array) $server->response_to_data($response, false);
+        $save_path = WP_CONTENT_DIR . '/uploads/wp-json/' . $route . '.json';
+        $f = fopen($save_path, "w+");
+        $dirname = dirname($save_path);
+
+        // Check and make file directory.
+        if (!is_dir($dirname)) {
+            mkdir($dirname, 0755, true);
+        }
+
+        fwrite($f, json_encode($data));
+        fclose($f);
+
+        // error_log(print_r((string) $route, true));
+
+        return $result;
     }
-
-    $route = $request->get_route() ? $request->get_route() : 'index';
-    $request = new WP_REST_Request('GET', $route);
-    $response = rest_do_request($request);
-    $server = rest_get_server();
-    $data = (array) $server->response_to_data($response, false);
-    $save_path = WP_CONTENT_DIR . '/uploads/wp-json/' . $route . '.json';
-    $f = fopen($save_path, "w+");
-    $dirname = dirname($save_path);
-
-    // Check and make file directory.
-    if (!is_dir($dirname)) {
-        mkdir($dirname, 0755, true);
-    }
-
-    fwrite($f, json_encode($data));
-    fclose($f);
-
-    // error_log(print_r((string) $route, true));
-
-    return $result;
 }
 
 add_filter('rest_pre_echo_response', 'api_request', 10, 3);
@@ -45,11 +45,7 @@ add_filter('rest_pre_echo_response', 'api_request', 10, 3);
 function user_request($post_id)
 {
 
-    global $post;
-
-    if (!in_array($post->post_type, ['post', 'page'])) {
-        return;
-    }
+    $post = get_post($post_id);
 
     if (wp_is_post_revision($post_id)) {
         return;
@@ -59,34 +55,37 @@ function user_request($post_id)
         return;
     }
 
-    $result = [];
-    $post_type = get_post_type($post_id);
-    $post_type_obj = get_post_type_object($post_type);
-    $post_type_name = (string) strtolower($post_type_obj->labels->name);
+    if (in_array($post->post_type, ['post', 'page'])) {
 
-    $rest_path = '/wp/v2/' .  $post_type_name . '/' . $post_id;
+        $result = [];
+        $post_type = get_post_type($post_id);
+        $post_type_obj = get_post_type_object($post_type);
+        $post_type_name = (string) strtolower($post_type_obj->labels->name);
 
-    $route = $rest_path;
-    $request = new WP_REST_Request('GET', $route);
+        $rest_path = '/wp/v2/' .  $post_type_name . '/' . $post_id;
 
-    $response = rest_do_request($request);
-    $server = rest_get_server();
-    $data = (array) $server->response_to_data($response, false);
-    $save_path = WP_CONTENT_DIR . '/uploads/wp-json/' . $route . '.json';
-    $f = fopen($save_path, "w+");
-    $dirname = dirname($save_path);
+        $route = $rest_path;
+        $request = new WP_REST_Request('GET', $route);
 
-    // Check and make file directory.
-    if (!is_dir($dirname)) {
-        mkdir($dirname, 0755, true);
+        $response = rest_do_request($request);
+        $server = rest_get_server();
+        $data = (array) $server->response_to_data($response, false);
+        $save_path = WP_CONTENT_DIR . '/uploads/wp-json/' . $route . '.json';
+        $f = fopen($save_path, "w+");
+        $dirname = dirname($save_path);
+
+        // Check and make file directory.
+        if (!is_dir($dirname)) {
+            mkdir($dirname, 0755, true);
+        }
+
+        fwrite($f, json_encode($data));
+        fclose($f);
+
+        // error_log(print_r($request, true));
+
+        return $result;
     }
-
-    fwrite($f, json_encode($data));
-    fclose($f);
-
-    // error_log(print_r($request, true));
-
-    return $result;
 }
 
 add_action('save_post', 'user_request');
