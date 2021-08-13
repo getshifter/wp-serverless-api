@@ -37,6 +37,8 @@ function api_request(array $result, \WP_REST_Server $server, \WP_Rest_Request $r
 
         return $result;
     }
+
+    return $result;
 }
 
 add_filter('rest_pre_echo_response', 'api_request', 10, 3);
