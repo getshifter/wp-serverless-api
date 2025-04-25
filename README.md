@@ -9,6 +9,10 @@ Explore WordPress data via the WP REST API as a JSON file for static WordPress H
 
 ## CHANGELOG
 
+### 0.2.1
+
+- Removed environment determination to generate db.json even in local environment [#2](https://github.com/getshifter/wp-serverless-api/pull/2)
+
 ### 0.2.0
 
 - [BREAKING CHANGE] Change save path from `/wp-content/uploads/wp-sls-api/db.json` to `/wp-content/wp-sls-api/db.json`
