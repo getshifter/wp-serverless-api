@@ -4,7 +4,7 @@
 Plugin Name: WP Serverless API
 Plugin URI: https://github.com/getshifter/wp-serverless-api
 Description: WordPress REST API to JSON File
-Version: 0.2.0
+Version: 0.2.1
 Author: Shifter
 Author URI: https://getshifter.io
 */
@@ -32,12 +32,7 @@ function compile_db(
     $db_array = array();
 
     foreach ($routes as $route) {
-        if  (getenv("SHIFTER_ACCESS_TOKEN") === false) {
-            $url =  'https://demo.wp-api.org/wp-json/wp/v2/' . $route;
-        } else {
-            $url =  esc_url( home_url( '/' ) ) . 'wp-json/wp/v2/' . $route;
-        }
-
+        $url =  esc_url( home_url( '/' ) ) . 'wp-json/wp/v2/' . $route;
         $jsonData = json_decode( file_get_contents($url) );
 
         $db_array[$route] = (array) $jsonData;
